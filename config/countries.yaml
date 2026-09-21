@@ -1,0 +1,1066 @@
+# Source of truth for all panel countries
+# Each country entry consumed by: ingestion jobs, quality checks, panel construction
+# KAOPEN (capital openness) is sourced from data/parquet/kaopen.parquet, not here:
+#   annual values 2019-2023, matched by calendar year and forward-filled within
+#   each country; the 2023 vintage carries into 2024-2025 (see src/features/build_panel.py)
+# crypto_ban is NO LONGER stored here: it is time-varying and derived daily from
+#   config/crypto_ban_episodes.csv via src/features/crypto_ban.py (date-range join).
+#   A country with no episode row is legal throughout (crypto_ban = 0).
+#
+# Fields:
+#   id:          ISO3 country code (joins kaopen.parquet on iso3 for KAOPEN/tier)
+#   name:        Full country name
+#   equity:
+#     source:    yahoo | investing_csv | null (FX-only country)
+#     ticker:    Yahoo Finance ticker (if source=yahoo)
+#     filename:  CSV filename in data/raw/investing_csvs/ (if source=investing_csv)
+#     currency:  Local currency ISO code
+#   fx:
+#     source:    yahoo | fred | investing_csv
+#     ticker:    Yahoo Finance ticker (format: XXXUSD=X gives local/USD)
+#     fred_series: FRED series ID (if source=fred or as fallback)
+#     filename:  CSV filename (if source=investing_csv)
+#
+# Yahoo FX ticker convention: XXXUSD=X → local currency per 1 USD
+# e.g., JPYUSD=X → JPY per USD (higher = weaker JPY)
+
+# ── TIER 1: OPEN (ka_open = 1.00) ──────────────────────────────────────────
+countries:
+  - id: AUS
+    name: Australia
+    equity:
+      source: yahoo
+      ticker: "^AXJO"        # S&P/ASX 200
+      currency: AUD
+    fx:
+      source: yahoo
+      ticker: "AUDUSD=X"
+      fred_series: "EXUSAL"  # AUD/USD from FRED (note: FRED uses USD per AUD)
+
+  - id: CAN
+    name: Canada
+    equity:
+      source: yahoo
+      ticker: "^GSPTSE"      # S&P/TSX Composite
+      currency: CAD
+    fx:
+      source: yahoo
+      ticker: "CADUSD=X"
+      fred_series: "EXCAUS"
+
+  - id: CZE
+    name: Czech Republic
+    equity:
+      source: investing_csv  # PX Index (Prague SE); yfinance can't resolve regional ^-prefixed tickers
+      filename: "CZE_equity.csv"
+      currency: CZK
+    fx:
+      source: yahoo
+      ticker: "CZKUSD=X"
+      fred_series: null
+
+  - id: HUN
+    name: Hungary
+    equity:
+      source: investing_csv
+      filename: "HUN_equity.csv"         # Budapest Stock Exchange BUX
+      currency: HUF
+    fx:
+      source: yahoo
+      ticker: "HUFUSD=X"
+      fred_series: null
+
+  - id: JPN
+    name: Japan
+    equity:
+      source: yahoo
+      ticker: "^N225"        # Nikkei 225
+      currency: JPY
+    fx:
+      source: yahoo
+      ticker: "JPYUSD=X"
+      fred_series: "EXJPUS"
+
+  - id: NOR
+    name: Norway
+    equity:
+      source: yahoo
+      ticker: "^OSEAX"       # Oslo Stock Exchange All-Share (OBX alternative)
+      currency: NOK
+    fx:
+      source: yahoo
+      ticker: "NOKUSD=X"
+      fred_series: null
+
+  - id: PER
+    name: Peru
+    equity:
+      source: investing_csv  # ^SPBLPGPT correct ticker but yfinance API won't fetch it
+      filename: "PER_equity.csv"
+      currency: PEN
+    fx:
+      source: yahoo
+      ticker: "PENUSD=X"
+      fred_series: null
+
+  - id: KOR
+    name: South Korea
+    equity:
+      source: yahoo
+      ticker: "^KS11"        # KOSPI
+      currency: KRW
+    fx:
+      source: yahoo
+      ticker: "KRWUSD=X"
+      fred_series: "EXKOUS"
+
+  - id: SWE
+    name: Sweden
+    equity:
+      source: yahoo
+      ticker: "^OMX"         # OMX Stockholm 30
+      currency: SEK
+    fx:
+      source: yahoo
+      ticker: "SEKUSD=X"
+      fred_series: null
+
+
+  # added 2026-06-08: openness-identification balancing (off-diagonal: open + lower-middle income, pegged JOD)
+  - id: JOR
+    name: Jordan
+    equity:
+      source: investing_csv  # ASE General Index (Amman SE); not on Yahoo Finance
+      filename: "JOR_equity.csv"
+      currency: JOD
+    fx:
+      source: yahoo
+      ticker: "JODUSD=X"     # JOD pegged to USD since 1995 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+
+# ── TIER 2: PARTIALLY OPEN (ka_open = 0.70) ────────────────────────────────
+
+  - id: CHL
+    name: Chile
+    equity:
+      source: investing_csv
+      filename: "CHL_equity.csv"       # Santiago SE IPSA
+      currency: CLP
+    fx:
+      source: yahoo
+      ticker: "CLPUSD=X"
+      fred_series: null
+
+  - id: KEN
+    name: Kenya
+    equity:
+      source: investing_csv  # NASI (Nairobi All Share); NSE20 is near-dead since ~2015
+      filename: "KEN_equity.csv"
+      currency: KES
+    fx:
+      source: yahoo
+      ticker: "KESUSD=X"
+      fred_series: null
+
+  - id: MEX
+    name: Mexico
+    equity:
+      source: yahoo
+      ticker: "^MXX"         # IPC (Indice de Precios y Cotizaciones)
+      currency: MXN
+    fx:
+      source: yahoo
+      ticker: "MXNUSD=X"
+      fred_series: "EXMXUS"
+
+  - id: POL
+    name: Poland
+    equity:
+      source: investing_csv  # WIG20 (blue-chip benchmark); yfinance can't resolve regional ^-prefixed tickers
+      filename: "POL_equity.csv"
+      currency: PLN
+    fx:
+      source: yahoo
+      ticker: "PLNUSD=X"
+      fred_series: null
+
+  # added 2026-06-08: openness-identification balancing (off-diagonal: partially open + upper-middle income)
+  - id: MUS
+    name: Mauritius
+    equity:
+      source: investing_csv  # SEMDEX (Stock Exchange of Mauritius); not on Yahoo Finance
+      filename: "MUS_equity.csv"
+      currency: MUR
+    fx:
+      source: yahoo
+      ticker: "MURUSD=X"
+      fred_series: null
+
+# ── TIER 3: INTERMEDIATE (ka_open = 0.30–0.45) ─────────────────────────────
+
+
+  - id: COL
+    name: Colombia
+    equity:
+      source: investing_csv  # ^COLCAP unreliable on Yahoo; download CSV from Investing.com
+      filename: "COL_equity.csv"
+      currency: COP
+    fx:
+      source: yahoo
+      ticker: "COPUSD=X"
+      fred_series: null
+
+  - id: EGY
+    name: Egypt
+    equity:
+      source: investing_csv  # EGX30 (Cairo & Alexandria Stock Exchanges); ^CASE30 returns no data on yfinance
+      filename: "EGY_equity.csv"
+      currency: EGP
+    fx:
+      source: yahoo
+      ticker: "EGPUSD=X"
+      fred_series: null
+
+  - id: IDN
+    name: Indonesia
+    equity:
+      source: yahoo
+      ticker: "^JKSE"        # IDX Composite
+      currency: IDR
+    fx:
+      source: yahoo
+      ticker: "IDRUSD=X"
+      fred_series: "EXINUS"
+
+  - id: NGA
+    name: Nigeria
+    equity:
+      source: investing_csv  # ^NGSEINDX has poor coverage on Yahoo
+      filename: "NGA_equity.csv"
+      currency: NGN
+    fx:
+      source: yahoo
+      ticker: "NGNUSD=X"
+      fred_series: null
+
+  - id: PHL
+    name: Philippines
+    equity:
+      source: yahoo
+      ticker: "PSEi.PS"      # PSEi
+      currency: PHP
+    fx:
+      source: yahoo
+      ticker: "PHPUSD=X"
+      fred_series: "EXPHUS"
+
+  - id: THA
+    name: Thailand
+    equity:
+      source: yahoo
+      ticker: "^SET.BK"      # SET Index
+      currency: THB
+    fx:
+      source: yahoo
+      ticker: "THBUSD=X" 
+      fred_series: "EXTHUS"
+
+  - id: VNM
+    name: Vietnam
+    equity:
+      source: investing_csv  # VN-Index; Yahoo ticker ^VNINDEX unreliable
+      filename: "VNM_equity.csv"
+      currency: VND
+    fx:
+      source: yahoo
+      ticker: "VNDUSD=X"
+      fred_series: null
+
+  # added 2026-06-08: openness-identification balancing (off-diagonal: intermediate openness + lower-middle income)
+  - id: JAM
+    name: Jamaica
+    equity:
+      source: investing_csv  # JSE Main Market Index; not on Yahoo Finance
+      filename: "JAM_equity.csv"
+      currency: JMD
+    fx:
+      source: yahoo
+      ticker: "JMDUSD=X"
+      fred_series: null
+
+# ── TIER 4: RESTRICTED (ka_open = 0.00–0.16) ───────────────────────────────
+
+  - id: BGD
+    name: Bangladesh
+    equity:
+      source: investing_csv  # DSEX not on Yahoo Finance
+      filename: "BGD_equity.csv"
+      currency: BDT
+    fx:
+      source: yahoo
+      ticker: "BDTUSD=X"
+      fred_series: null
+
+  - id: BRA
+    name: Brazil
+    equity:
+      source: yahoo
+      ticker: "^BVSP"        # Bovespa / IBOVESPA
+      currency: BRL
+    fx:
+      source: yahoo
+      ticker: "BRLUSD=X"
+      fred_series: "EXBZUS"
+
+  - id: CHN
+    name: China
+    equity:
+      source: yahoo
+      ticker: "000001.SS"    # SSE Composite Index
+      currency: CNY
+    fx:
+      source: yahoo
+      ticker: "CNYUSD=X"
+      fred_series: "EXCHUS"
+
+  - id: GHA
+    name: Ghana
+    data_quality_risk: true   # DROPPED, GSE Composite not available on Investing.com; cut per cut-order item 3
+    equity:
+      source: null             # GSE Composite not found on Investing.com or Yahoo Finance
+      currency: GHS
+    fx:
+      source: yahoo
+      ticker: "GHSUSD=X"
+      fred_series: null
+
+  - id: IND
+    name: India
+    equity:
+      source: yahoo
+      ticker: "^BSESN"       # BSE Sensex (alternative: ^NSEI for NIFTY 50)
+      currency: INR
+    fx:
+      source: yahoo
+      ticker: "INRUSD=X"
+      fred_series: "EXINUS"
+
+  - id: MAR
+    name: Morocco
+    equity:
+      source: investing_csv  # MASI not on Yahoo Finance
+      filename: "MAR_equity.csv"
+      currency: MAD
+    fx:
+      source: yahoo
+      ticker: "MADUSD=X"     # If unavailable: fred_fallback below
+      fred_series: "EXMAUS"  # FRED: Moroccan Dirham per USD
+
+  - id: PAK
+    name: Pakistan
+    equity:
+      source: investing_csv  # KSE100 coverage on Yahoo Finance is unreliable
+      filename: "PAK_equity.csv"
+      currency: PKR
+    fx:
+      source: yahoo
+      ticker: "PKRUSD=X"
+      fred_series: null
+
+  - id: ZAF
+    name: South Africa
+    equity:
+      source: yahoo
+      ticker: "^J200.JO"     # JSE Top 40
+      currency: ZAR
+    fx:
+      source: yahoo
+      ticker: "ZARUSD=X"
+      fred_series: "EXSFUS"
+
+  - id: TUN
+    name: Tunisia
+    equity:
+      source: investing_csv  # Tunindex not on Yahoo Finance
+      filename: "TUN_equity.csv"
+      currency: TND
+    fx:
+      source: investing_csv  # TND not on Yahoo Finance or FRED
+      filename: "TUN_fx.csv"
+      fred_series: null
+
+  - id: TUR
+    name: Turkey
+    equity:
+      source: investing_csv  # BIST 100; yfinance can't resolve regional ^-prefixed tickers
+      filename: "TUR_equity.csv"
+      currency: TRY
+    fx:
+      source: yahoo
+      ticker: "TRYUSD=X"
+      fred_series: "EXTAUS"
+
+  # added 2026-06-08: openness-identification balancing (off-diagonal: restricted openness + upper-middle income / oil; KZT free-floats since 2015)
+  - id: KAZ
+    name: Kazakhstan
+    equity:
+      source: investing_csv  # KASE Index (Kazakhstan SE); not on Yahoo Finance
+      filename: "KAZ_equity.csv"
+      currency: KZT
+    fx:
+      source: yahoo
+      ticker: "KZTUSD=X"
+      fred_series: null
+
+
+
+# added 2026-06-08:
+  - id: DZA
+    name: Algeria
+    equity:
+      source: investing_csv  # KASE Index (Kazakhstan SE); not on Yahoo Finance
+      filename: "DZA_equity.csv"
+      currency: DZD
+    fx:
+      source: investing_csv
+      filename: "DZA_fx.csv"
+      fred_series: null
+
+  - id: ARG
+    name: Argentina
+    equity:
+      source: yahoo
+      ticker: "^MERV"        # MERVAL (Buenos Aires SE)
+      currency: ARS
+    fx:
+      source: yahoo
+      ticker: "ARSUSD=X"
+      fred_series: null
+
+  - id: AUT
+    name: Austria
+    equity:
+      source: yahoo
+      ticker: "^ATX"         # ATX (Vienna SE)
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: DNK
+    name: Denmark
+    equity:
+      source: investing_csv  # OMX Copenhagen 20; yfinance can't resolve regional ^-prefixed tickers
+      filename: "DNK_equity.csv"
+      currency: DKK
+    fx:
+      source: yahoo
+      ticker: "DKKUSD=X"
+      fred_series: null
+  
+  - id: ECU
+    name: Ecuador
+    equity:
+      source: investing_csv  # IESS Index (Quito SE); not on Yahoo Finance
+      filename: "ECU_equity.csv"
+      currency: USD          # Ecuador uses USD as local currency since 2000 → FX channel will be near-flat (err_float=0)
+    fx:
+      source: yahoo
+      ticker: "USDECU=X"     # If unavailable: fred_fallback below
+      fred_series: "EXUSDE"  # FRED: USD per Ecuadorian Sucre (pre-dollarization)
+  
+  - id: FRA
+    name: France
+    equity:
+      source: yahoo
+      ticker: "^FCHI"        # CAC 40 (Euronext Paris)
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+
+  - id: DEU
+    name: Germany
+    equity:
+      source: yahoo
+      ticker: "^GDAXI"       # DAX (Frankfurt SE)
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: GRC
+    name: Greece
+    equity:
+      source: yahoo
+      ticker: "GD.AT"      # or "FTSE.AT" for FTSE/Athex 20
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: HKG
+    name: Hong Kong
+    equity:
+      source: yahoo
+      ticker: "^HSI"         # Hang Seng Index
+      currency: HKD
+    fx:
+      source: yahoo
+      ticker: "HKDUSD=X"     # HKD pegged to USD since 1983 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: ISL
+    name: Iceland
+    equity:
+      source: investing_csv  # OMX Iceland 25; not on Yahoo Finance
+      filename: "ISL_equity.csv"
+      currency: ISK
+    fx:
+      source: yahoo
+      ticker: "ISKUSD=X"
+      fred_series: null
+  
+  - id: ITA
+    name: Italy
+    equity:
+      source: yahoo
+      ticker: "FTSEMIB.MI"     # FTSE MIB (Borsa Italiana)
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: KWT
+    name: Kuwait
+    equity:
+      source: investing_csv
+      filename: "KWT_equity.csv"  # Kuwait SE All Share; not on Yahoo Finance        
+      currency: KWD
+    fx:
+      source: yahoo
+      ticker: "KWDUSD=X"     # KWD pegged to USD since 2003 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: KGZ
+    name: Kyrgyzstan
+    equity:
+      source: countryeconomy.com  # KSE Index (Kyrgyz SE); not on Yahoo Finance
+      filename: "KGZ_equity.csv"
+      currency: KGS
+    fx:
+      source: investing_csv  # KGS not on Yahoo Finance or FRED
+      filename: "KGZ_fx.csv"
+      fred_series: null
+
+  - id: LAO
+    name: Laos
+    equity:
+      source: seekingalpha.com  # LSX Composite (Lao SE); not on Yahoo Finance
+      filename: "LAO_equity.csv"
+      currency: LAK
+    fx:
+      source: yahoo
+      ticker: "LAKUSD=X"
+      fred_series: null
+  
+  - id: LBN
+    name: Lebanon
+    equity:
+      source: investing_csv  # BLOM Stock Index (Beirut SE); not on Yahoo Finance
+      filename: "LBN_equity.csv"
+      currency: LBP
+    fx:
+      source: yahoo
+      ticker: "LBPUSD=X"     # LBP pegged to USD since 1997 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: MWI
+    name: Malawi
+    equity:
+      source: investing_csv  # MSE All Share (Malawi SE); not on Yahoo Finance
+      filename: "MWI_equity.csv"
+      currency: MWK
+    fx:
+      source: yahoo
+      ticker: "MWKUSD=X"
+      fred_series: null
+
+  - id: MYS
+    name: Malaysia
+    equity:
+      source: yahoo
+      ticker: "^KLSE"        # FTSE Bursa Malaysia KLCI
+      currency: MYR
+    fx:
+      source: yahoo
+      ticker: "MYRUSD=X"
+      fred_series: "EXMYUS"
+
+  - id: MDV
+    name: Maldives
+    equity:
+      source: stockexchange.mv  # MSE Equity Index (Maldives SE); not on Yahoo Finance
+      filename: "MDV_equity.csv"
+      currency: MVR
+    fx:
+      source: yahoo
+      ticker: "MVRUSD=X"     # MVR pegged to USD since 1980 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: MNG
+    name: Mongolia
+    equity:
+      source: mse.mn  # MSE Top 20 (Mongolia SE); not on Yahoo Finance
+      filename: "MNG_equity.csv"
+      currency: MNT
+    fx:
+      source: investing_csv  # MNT not on Yahoo Finance or FRED
+      filename: "MNG_fx.csv"
+      fred_series: null
+  
+  - id: NAM
+    name: Namibia
+    equity:
+      source: investing_csv  # NSX Overall Index; not on Yahoo Finance
+      filename: "NAM_equity.csv"
+      currency: NAD
+    fx:
+      source: yahoo
+      ticker: "NADUSD=X"     # NAD pegged to USD since 1993 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: NZL
+    name: New Zealand
+    equity:
+      source: yahoo
+      ticker: "^NZ50"        # S&P/NZX 50
+      currency: NZD
+    fx:
+      source: yahoo
+      ticker: "NZDUSD=X"
+      fred_series: "EXNZUS"
+  
+  - id: OMN
+    name: Oman
+    equity:
+      source: investing_csv  # MSM 30 (Muscat SE); not on Yahoo Finance
+      filename: "OMN_equity.csv"
+      currency: OMR
+    fx:
+      source: yahoo
+      ticker: "OMRUSD=X"     # OMR pegged to USD since 1973 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: QAT
+    name: Qatar
+    equity:
+      source: investing_csv  # QE General Index (QSI)
+      filename: "QAT_equity.csv"
+      currency: QAR
+    fx:
+      source: yahoo
+      ticker: "QARUSD=X"     # QAR pegged to USD since 1980 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+
+  - id: RUS
+    name: Russia
+    equity:
+      source: moex.com  # MOEX Russia Index; yfinance can't resolve regional ^-prefixed tickers
+      filename: "RUS_equity.csv"
+      currency: RUB
+    fx:
+      source: yahoo
+      ticker: "RUBUSD=X"
+      fred_series: "EXRUSUS"
+
+  - id: SAU
+    name: Saudi Arabia
+    equity:
+      source: yahoo
+      ticker: "^TASI.SR"     # Tadawul All Share Index
+      currency: SAR
+    fx:
+      source: yahoo
+      ticker: "SARUSD=X"     # SAR pegged to USD since 1986 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: SGP
+    name: Singapore
+    equity:
+      source: yahoo
+      ticker: "^STI"         # Straits Times Index
+      currency: SGD
+    fx:
+      source: yahoo
+      ticker: "SGDUSD=X"     # SGD pegged to USD since 1997 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: ESP
+    name: Spain
+    equity:
+      source: yahoo
+      ticker: "^IBEX"        # IBEX 35 (Madrid SE)
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: CHE
+    name: Switzerland
+    equity:
+      source: yahoo
+      ticker: "^SSMI"        # SMI (Swiss Market Index)
+      currency: CHF
+    fx:
+      source: yahoo
+      ticker: "CHFUSD=X"     # CHF pegged to USD since 1865 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+    
+  - id: TZA
+    name: Tanzania
+    equity:
+      source: africanfinancials.com 
+      filename: "TZA_equity.csv"
+      currency: TZS
+    fx:
+      source: yahoo
+      ticker: "TZSUSD=X"
+      fred_series: null
+
+  - id: UKR
+    name: Ukraine
+    equity:
+      source: pfts.ua
+      filename: "UKR_equity.csv"
+      currency: UAH
+    fx:
+      source: yahoo
+      ticker: "UAHUSD=X"
+      fred_series: null
+
+  - id: ARE
+    name: United Arab Emirates
+    equity:
+      source: yahoo
+      ticker: "DFMGI.AE"         # DFMGI (Dubai Financial Market General Index)
+      currency: AED
+    fx:
+      source: yahoo
+      ticker: "AEDUSD=X"     # AED pegged to USD since 1997 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: GBR
+    name: United Kingdom
+    equity:
+      source: yahoo
+      ticker: "^FTSE"        # FTSE 100 (London SE)
+      currency: GBP
+    fx:
+      source: yahoo
+      ticker: "GBPUSD=X"
+      fred_series: "EXGBUS"
+  
+  - id: USA
+    name: United States
+    equity:
+      source: yahoo
+      ticker: "^GSPC"        # S&P 500
+      currency: USD
+    fx:
+      source: yahoo
+      ticker: "USDUSD=X"     # USD per USD (flat 1.0)
+      fred_series: null
+  
+  # VEN (Venezuela) is not curated in this config: the IBC equity index is
+  # bolívar-denominated under hyperinflation, so its daily returns / realized
+  # volatility are inflation-dominated, not market-driven; the series also carries
+  # pure data artifacts (equity ÷1000 scale breaks 2021-03 & 2025-07, FX ÷10⁶
+  # redenomination Oct-2021). The series is still audited from the clean data
+  # (it passes the equity screen) and drops out at spillover estimation, where
+  # some rolling windows have near-singular covariances. See the sample appendix.
+  - id: ZMB
+    name: Zambia
+    equity:
+      source: africanfinancials.com  # LuSE All Share (Lusaka SE); not on Yahoo Finance
+      filename: "ZMB_equity.csv"
+      currency: ZMW
+    fx:
+      source: yahoo
+      ticker: "ZMWUSD=X"
+      fred_series: null
+  
+  - id: BHR
+    name: Bahrain
+    equity:
+      source: bahrainbourse.com  # BHB All Share (Bahrain SE); not on Yahoo Finance
+      filename: "BHR_equity.csv"
+      currency: BHD
+    fx:
+      source: yahoo
+      ticker: "BHDUSD=X"     # BHD pegged to USD since 2001 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: BEL
+    name: Belgium
+    equity:
+      source: yahoo
+      ticker: "^BFX"       # BEL 20 (Euronext Brussels)
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: BIH
+    name: Bosnia and Herzegovina
+    equity:
+      source: sase.ba
+      filename: "BIH_equity.csv"
+      currency: BAM
+    fx:
+      source: investing_csv  # BAM not on Yahoo Finance or FRED; pegged to EUR since 1997 (err_float=0)
+      filename: "BIH_fx.csv"
+      fred_series: null
+  
+  - id: BWA
+    name: Botswana
+    equity:
+      source: investing_csv  # BSE Domestic Company Index; not on Yahoo Finance
+      filename: "BWA_equity.csv"
+      currency: BWP
+    fx:
+      source: yahoo
+      ticker: "BWPUSD=X"     # BWP pegged to USD since 1975 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: BGR
+    name: Bulgaria
+    equity:
+      source: infostock.bg  # SOFIX (Sofia SE); not on Yahoo Finance
+      filename: "BGR_equity.csv"
+      currency: BGN
+    fx:
+      source: yahoo
+      ticker: "BGNUSD=X"     # BGN pegged to EUR since 1999 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: KHM
+    name: Cambodia
+    equity:
+      source: countryeconomy.com  # CSX Index (Cambodia SE); not on Yahoo Finance
+      filename: "KHM_equity.csv"
+      currency: KHR
+    fx:
+      source: yahoo
+      ticker: "KHRUSD=X"     # KHR pegged to USD since 1994 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: HRV
+    name: Croatia
+    equity:
+      source: zse.hr  # CROBEX (Zagreb SE); not on Yahoo Finance
+      filename: "HRV_equity.csv"
+      currency: HRK
+    fx:
+      source: yahoo
+      ticker: "HRKUSD=X"     # HRK pegged to EUR since 1997 → FX channel will be near-flat (err_float=0)
+      fred_series: null
+  
+  - id: CYP
+    name: Cyprus
+    equity:
+      source: investing_csv  # CSE General and Parallel Index (Cyprus SE); not on Yahoo Finance
+      filename: "CYP_equity.csv"
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: EST
+    name: Estonia
+    equity:
+      source: investing_csv  # OMX Tallinn general index; yfinance can't resolve regional ^-prefixed tickers
+      filename: "EST_equity.csv"
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: FIN
+    name: Finland
+    equity:
+      source: yahoo
+      ticker: "^OMXH25"     # OMX Helsinki 25
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: IRL
+    name: Ireland
+    equity:
+      source: yahoo
+      ticker: "^ISEQ"       # ISEQ Overall Index (Irish SE)
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+
+  - id: LVA
+    name: Latvia
+    equity:
+      source: yahoo
+      ticker: "^OMXRGI"      # OMX Riga general index
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: LTU
+    name: Lithuania
+    equity:
+      source: yahoo
+      ticker: "^OMXVGI"      # OMX Vilnius general index
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: MLT
+    name: Malta
+    equity:
+      source: investing_csv  # MSE Equity Index (Malta SE); not on Yahoo Finance
+      filename: "MLT_equity.csv"
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: NLD
+    name: Netherlands
+    equity:
+      source: yahoo
+      ticker: "^AEX"         # AEX (Euronext Amsterdam)
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: PAN
+    name: Panama
+    equity:
+      source: countryeconomy.com  # BVPSE General Index (Panama SE); not on Yahoo Finance
+      filename: "PAN_equity.csv"
+      currency: USD          # Panama uses USD as local currency → FX channel will be near-flat (err_float=0)
+    fx:
+      source: yahoo
+      ticker: "USDPAN=X"     # If unavailable: fred_fallback below
+      fred_series: "EXUSDP"  # FRED: USD per Panamanian Balboa (pre-dollarization)
+  
+  - id: PRT
+    name: Portugal
+    equity:
+      source: investing_csv  # PSI 20 not on Yahoo Finance; download CSV from Investing.com
+      filename: "PRT_equity.csv"
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+
+    
+  - id: ROU
+    name: Romania
+    equity:
+      source: investing_csv  # BET Index (Bucharest SE); yfinance can't resolve regional ^-prefixed tickers
+      filename: "ROU_equity.csv"
+      currency: RON
+    fx:
+      source: yahoo
+      ticker: "RONUSD=X"
+      fred_series: null
+
+  - id: SVK
+    name: Slovakia
+    equity:
+      source: bsse.sk
+      filename: "SVK_equity.csv"         # Bratislava Stock Exchange SAX Index
+      currency: EUR          # Slovakia uses the Euro; FX channel will be near-flat (err_float=0)
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: SVN
+    name: Slovenia
+    equity:
+      source: ljse.si  # SBI TOP (Ljubljana SE); not on Yahoo Finance
+      filename: "SVN_equity.csv"
+      currency: EUR
+    fx:
+      source: yahoo
+      ticker: "EURUSD=X"
+      fred_series: "EXUSEU"
+  
+  - id: UGA
+    name: Uganda
+    equity:
+      source: investing_csv  # USE All Share (Uganda SE); not on Yahoo Finance
+      filename: "UGA_equity.csv"
+      currency: UGX
+    fx:
+      source: yahoo
+      ticker: "UGXUSD=X"
+      fred_series: null
+# ── GLOBAL CONTROL VARIABLES ────────────────────────────────────────────────
+controls:
+  - id: VIX
+    name: "CBOE Volatility Index"
+    source: yahoo
+    ticker: "^VIX"
+    role: global_risk_appetite
+
+  - id: SP500
+    name: "S&P 500"
+    source: yahoo
+    ticker: "^GSPC"
+    role: global_equity
+
+  - id: BRENT
+    name: "Brent Crude Oil"
+    source: yahoo
+    ticker: "BZ=F"
+    role: commodity_risk
+
+  - id: DXY
+    name: "US Dollar Index (Broad)"
+    source: fred
+    fred_series: "DTWEXBGS"
+    role: usd_strength
+
+# ── CRYPTO ASSETS ───────────────────────────────────────────────────────────
+crypto:
+  - symbol: "BTCUSDT"
+    name: "Bitcoin"
+    role: primary
+    interval: "1m"
+
+  - symbol: "ETHUSDT"
+    name: "Ethereum"
+    role: robustness
+    interval: "1m"

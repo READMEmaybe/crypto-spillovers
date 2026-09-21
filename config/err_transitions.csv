@@ -1,0 +1,22 @@
+country_id,flip_year,transition_date,from_regime,to_regime,direction,trigger,source,confidence
+ARG,2020,2019-09-01,Floating,Stabilized arrangement,to_managed,cepo capital controls reinstated,AREAER/BCRA,medium
+GHA,2020,2020-04-01,Floating,Other managed arrangement,to_managed,COVID-19 / BoP stress,AREAER/BoG,medium
+MUS,2020,2020-04-01,Floating,Crawl-like arrangement,to_managed,COVID-19,AREAER/BoM,low
+PER,2020,2020-04-01,Floating,Other managed arrangement,to_managed,COVID-19,AREAER/BCRP,low
+PHL,2020,2020-03-01,Floating,Other managed arrangement,to_managed,COVID-19,AREAER/BSP,low
+PAK,2020,2020-03-01,Other managed arrangement,Floating,to_float,market-determined rate (IMF EFF),AREAER/SBP,medium
+CHE,2021,2021-01-01,Free floating,Other managed arrangement,to_managed,SNB FX intervention,AREAER/SNB,medium
+MUS,2021,2021-01-01,Crawl-like arrangement,Floating,to_float,post-COVID normalization,AREAER/BoM,low
+PER,2021,2021-03-01,Other managed arrangement,Floating,to_float,post-COVID normalization,AREAER/BCRP,low
+PHL,2021,2021-06-01,Other managed arrangement,Floating,to_float,post-COVID normalization,AREAER/BSP,low
+PAK,2021,2021-05-06,Floating,Other managed arrangement,to_managed,SBP intervention / managed band,AREAER/SBP,medium
+ZMB,2021,2021-01-01,Floating,Other managed arrangement,to_managed,kwacha volatility,AREAER/BoZ,low
+JAM,2022,2022-01-01,Floating,Crawl-like arrangement,to_managed,AREAER reclassification (vintage lag),AREAER,medium
+TUR,2022,2022-07-28,Floating,Crawl-like arrangement,to_managed,lira crisis / managed stabilization,AREAER/CBRT,high
+ZMB,2022,2022-01-01,Other managed arrangement,Floating,to_float,kwacha volatility,AREAER/BoZ,low
+CHE,2023,2023-01-01,Other managed arrangement,Free floating,to_float,SNB intervention wound down,AREAER/SNB,medium
+HRV,2023,2023-01-01,Stabilized arrangement,Free floating,to_float,euro adoption (1 Jan 2023),AREAER/ECB,high
+NGA,2023,2023-06-14,Crawl-like arrangement,Floating,to_float,FX market unification reform,AREAER/CBN,high
+UKR,2023,2022-02-24,Floating,Stabilized arrangement,to_managed,Russian invasion; NBU fixed rate,AREAER/NBU,high
+ZMB,2023,2023-01-01,Floating,Other managed arrangement,to_managed,kwacha volatility,AREAER/BoZ,low
+EGY,2024,2024-03-06,Stabilized arrangement,Floating,to_float,IMF program float reform,AREAER/CBE,high

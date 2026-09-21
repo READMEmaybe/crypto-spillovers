@@ -1,0 +1,35 @@
+# =============================================================================
+# Frozen, configuration-based, data-quality-only country-inclusion rule.
+#
+# Decided on DATA QUALITY ALONE, blind to regression results, so the sample
+# cannot be accused of cherry-picking. Editing thresholds here re-derives the
+# frozen sample (`make sample`) and re-validates every downstream result.
+#
+# Metrics are defined in src/sample/audit.py:
+#   coverage   = valid daily obs / business days in [window.start, window.end]
+#   stale_frac = share of trading days whose price equals the previous day
+#                (illiquid / synthetic / hard-pegged series)
+# =============================================================================
+
+window:
+  start: "2019-01-01"
+  end: "2025-12-31"
+
+channels:
+  equity:
+    min_coverage: 0.80      # >= 80% of the window's business days
+    max_stale_frac: 0.20    # illiquid-index screen (frozen <= 1 day in 5)
+  fx:
+    min_coverage: 0.80
+    max_stale_frac: 0.40    # hard-peg screen; managed floats (~0.25) still qualify
+
+# A country enters the STUDY if it qualifies on >= 1 channel; each channel's
+# regression then uses only the countries that qualified for that channel.
+membership: any_channel
+
+# Idiosyncratic domestic macro crises are KEPT in-sample but FLAGGED, so the
+# headline runs on everyone and a leave-them-out robustness check is reported.
+# The flag is an objective country-year criterion, not a hand-picked list.
+crisis_flag:
+  inflation_pct_min: 25.0       # annual CPI inflation (%) at/above this flags the year
+  fx_depreciation_min: 0.30     # >= 30% annual local-per-USD depreciation also flags it

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Environment and secrets
+.venv/
+.env
+
+# Derived data (regenerable; large)
+data/parquet/
+data/cache/
+
+# Office files and binaries that are not part of the project
+*.xls
+*.xlsx
+*.docx
+*.pdf
+
+# Thesis artifacts (generated locally by make tables/appendix/figures; the
+# thesis itself is not part of this repository)
+thesis/
+
+# Manual raw inputs are part of the replication materials (exception to the office-file rules above)
+!data/raw/
+!data/raw/**

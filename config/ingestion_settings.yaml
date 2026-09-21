@@ -1,0 +1,31 @@
+binance:
+  base_url: "https://api.binance.com/api/v3/klines"
+  candles_per_request: 1000
+  # Binance klines endpoint costs 2 weight units per call; limit is 6000/min
+  # Using a conservative effective limit of 1200 calls/min
+  rate_limit_per_minute: 1200
+  safety_factor: 0.8       # Use only 80% of rate limit to avoid 429s
+  max_retries: 5
+  backoff_base_seconds: 2  # Exponential: 2, 4, 8, 16, 32 seconds
+
+yahoo:
+  max_retries: 3
+  backoff_base_seconds: 1
+  session_timeout_seconds: 30
+
+fred:
+  api_key_env: "FRED_API_KEY"
+  max_retries: 3
+  backoff_base_seconds: 2
+
+dates:
+  start: "2019-01-01"
+  end: "2025-12-31"
+
+paths:
+  parquet_root: "data/parquet"
+  investing_csvs: "data/raw/investing_csvs"
+
+logging:
+  level: "INFO"
+  progress_every_n_requests: 50  # Log progress every N Binance API calls

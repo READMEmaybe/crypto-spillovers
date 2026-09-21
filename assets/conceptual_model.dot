@@ -1,0 +1,15 @@
+digraph conceptual_model {
+  rankdir=TB; node [shape=box, fontname="Helvetica", fontsize=10];
+  cv  [label="Cryptocurrency volatility\n(global; Bitcoin realized volatility)", style="rounded,filled", fillcolor="#eef"];
+  tr  [label="Volatility spillover\ntransmission", style="rounded,filled", fillcolor="#ffe"];
+  dm  [label="Domestic markets\nequity index  &  FX rate", style="rounded,filled", fillcolor="#efe"];
+  kao [label="Capital-account openness\n(Chinn-Ito KAOPEN)\n[moderator -> H2]", shape=note, fontsize=9];
+  err [label="Exchange-rate regime\n(float vs managed/peg)\n[moderator, FX -> H3]", shape=note, fontsize=9];
+  h1  [label="transmission is measurable\n-> H1", shape=plaintext, fontsize=9];
+
+  cv -> tr -> dm;
+  cv -> h1 [style=dotted, arrowhead=none];
+  kao -> tr [style=dashed];
+  err -> tr [style=dashed];
+  { rank=same; kao; tr; err; }
+}
